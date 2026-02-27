@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $last_name = trim($_POST['last_name'] ?? '');
     $birth_date = trim($_POST['birth_date'] ?? '');
     $gender = trim($_POST['gender'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
+    $contact_number = trim($_POST['contact_number'] ?? '');
     $address = trim($_POST['address'] ?? '');
     
     if (empty($first_name)) {
@@ -28,10 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO patients (first_name, last_name, birth_date, gender, phone, address) 
+            $stmt = $pdo->prepare("INSERT INTO patients (first_name, last_name, birth_date, gender, contact_number, address) 
                                    VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$first_name, $last_name, $birth_date, $gender, $phone, $address]);
-            
+            $stmt->execute([$first_name, $last_name, $birth_date, $gender, $contact_number, $address]);
+
             $_SESSION['success'] = "Patient added successfully!";
             header("Location: view_patients.php");
             exit;
@@ -89,9 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" name="phone" 
-                       value="<?php echo htmlspecialchars($phone); ?>">
+                <label for="contact_number" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" id="contact_number" name="contact_number" 
+                       value="<?php echo htmlspecialchars($contact_number); ?>">
             </div>
             
             <div class="mb-3">

@@ -7,7 +7,8 @@ $sql = "CREATE TABLE patients (
     last_name VARCHAR(100) NOT NULL,
     birth_date DATE NOT NULL,
     gender VARCHAR(10) NOT NULL,
-    contact_number VARCHAR(20) NOT NULL
+    contact_number VARCHAR(20) NOT NULL,
+    address VARCHAR(100) NOT NULL
 )";
 
 if (mysqli_query($conn, $sql)) {

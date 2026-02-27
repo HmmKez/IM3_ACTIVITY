@@ -58,7 +58,7 @@ try {
                             <th>Full Name</th>
                             <th>Birth Date</th>
                             <th>Gender</th>
-                            <th>Phone</th>
+                            <th>Contact Number</th>
                             <th>Address</th>
                             <th>Actions</th>
                         </tr>
@@ -84,7 +84,7 @@ try {
                             </td>
 
                             <td>
-                                <?php echo htmlspecialchars($patient['phone'] ?? 'N/A'); ?>
+                                <?php echo htmlspecialchars($patient['contact_number'] ?? 'N/A'); ?>
                             </td>
 
                             <td>
