@@ -1,9 +1,26 @@
 <?php
 require_once 'db_connect.php';
-includeHeader('Add Patient');
+includeHeader('Edit Patient');
 
-$name = $age = $gender = $phone = $address = '';
+$id = $_GET['id'] ?? 0;
 $errors = [];
+
+// Fetch patient data
+try {
+    $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+    $stmt->execute([$id]);
+    $patient = $stmt->fetch();
+    
+    if (!$patient) {
+        $_SESSION['error'] = "Patient not found.";
+        header("Location: view_patients.php");
+        exit;
+    }
+} catch(PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: view_patients.php");
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate inputs
@@ -23,20 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO patients (name, age, gender, phone, address) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $age, $gender, $phone, $address]);
+            $stmt = $pdo->prepare("UPDATE patients SET name = ?, age = ?, gender = ?, phone = ?, address = ? WHERE id = ?");
+            $stmt->execute([$name, $age, $gender, $phone, $address, $id]);
             
-            $_SESSION['success'] = "Patient added successfully!";
+            $_SESSION['success'] = "Patient updated successfully!";
             header("Location: view_patients.php");
             exit;
         } catch(PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
+} else {
+    // Populate form with existing data
+    $name = $patient['name'];
+    $age = $patient['age'];
+    $gender = $patient['gender'];
+    $phone = $patient['phone'];
+    $address = $patient['address'];
 }
 ?>
 
-<h1 class="mb-4">Add New Patient</h1>
+<h1 class="mb-4">Edit Patient</h1>
 
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger">
@@ -88,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="d-flex justify-content-between">
                 <a href="view_patients.php" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Patient</button>
+                <button type="submit" class="btn btn-primary">Update Patient</button>
             </div>
         </form>
     </div>

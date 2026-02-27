@@ -1,10 +1,675 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>MediCare Hospital | Patient Management System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            color: #2c3e50;
+        }
+
+        /* Professional Gradient Background */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background Shapes */
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -50px;
+        }
+
+        .shape2 {
+            width: 400px;
+            height: 400px;
+            bottom: -200px;
+            left: -100px;
+            animation-delay: -3s;
+        }
+
+        .shape3 {
+            width: 200px;
+            height: 200px;
+            bottom: 50px;
+            right: 100px;
+            animation-delay: -1.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background: transparent !important;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: white !important;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+
+        .navbar.scrolled .nav-link {
+            color: #2c3e50 !important;
+        }
+
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .navbar-brand span {
+            color: #ffd700;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            margin: 0 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: #ffd700 !important;
+        }
+
+        /* Hero Content */
+        .hero-content {
+            padding: 150px 0 100px;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* CTA Buttons */
+        .btn-cta {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            animation: fadeInUp 1s ease 0.6s both;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary-custom {
+            background: #ffd700;
+            color: #2c3e50;
+            border: none;
+        }
+
+        .btn-primary-custom:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-outline-custom {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline-custom:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 100px 0;
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            color: white;
+            font-size: 32px;
+            margin: 0 auto 25px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .feature-card p {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .feature-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .feature-link:hover {
+            color: #764ba2;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .footer h4::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #ffd700;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffd700;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: #ffd700;
+            color: #2c3e50;
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+            padding-top: 30px;
+            text-align: center;
+            color: #bdc3c7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .stat-card {
+                margin-bottom: 20px;
+            }
+            
+            .btn-cta {
+                display: block;
+                margin: 10px 0;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World</h1>
+    <!-- Hero Section with Navigation -->
+    <section class="hero-section">
+        <!-- Animated Background Shapes -->
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+
+      <!-- Navigation - Replace the entire nav section with this -->
+<nav class="navbar navbar-expand-lg navbar-dark" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="fas fa-hospital me-2"></i>Medi<span>Care</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.php">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="view_doctors.php">Doctors</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="view_patients.php">Patients</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="view_appointments.php">Appointments</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+        <!-- Hero Content -->
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="hero-title">
+                        Welcome to <span style="color: #ffd700;">MediCare</span> Hospital
+                    </h1>
+                    <p class="hero-subtitle">
+                        Experience world-class healthcare with our integrated patient management system. 
+                        We provide comprehensive medical services with cutting-edge technology and compassionate care.
+                    </p>
+                    <div class="mt-4">
+                       <a href="dashboard.php" class="btn btn-cta btn-primary-custom">
+    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+</a>
+                        <a href="#features" class="btn btn-cta btn-outline-custom">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <img src="https://via.placeholder.com/600x400/ffffff/667eea?text=Medical+Care" 
+                         alt="Medical Care" class="img-fluid rounded-3 shadow-lg">
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row stats-container" id="stats-container">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="stat-number" id="doctor-count">50+</div>
+                        <div class="stat-label">Expert Doctors</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                        <div class="stat-number" id="patient-count">200+</div>
+                        <div class="stat-label">Happy Patients</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-number" id="appointment-count">150+</div>
+                        <div class="stat-label">Appointments</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div class="stat-number" id="experience-count">25+</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Our Healthcare Services</h2>
+                <p>Comprehensive medical management system for modern healthcare facilities</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3>Doctor Management</h3>
+                        <p>Efficiently manage doctor profiles, specializations, schedules, and contact information.</p>
+                      <a href="view_doctors.php" class="feature-link">
+    Manage Doctors <i class="fas fa-arrow-right ms-2"></i>
+</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Patient Records</h3>
+                        <p>Maintain comprehensive patient histories, demographics, and medical records securely.</p>
+                       <a href="view_patients.php" class="feature-link">
+    View Patients <i class="fas fa-arrow-right ms-2"></i>
+</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h3>Appointment Scheduling</h3>
+                        <p>Smart scheduling system with automatic conflict prevention and reminders.</p>
+                       <a href="view_appointments.php" class="feature-link">
+    Schedule Now <i class="fas fa-arrow-right ms-2"></i>
+</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Analytics Dashboard</h3>
+                        <p>Real-time insights and statistics about hospital operations and patient care.</p>
+                        <a href="dashboard.php" class="feature-link">
+    View Dashboard <i class="fas fa-arrow-right ms-2"></i>
+</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <h3>Digital Records</h3>
+                        <p>Paperless documentation with secure digital storage and easy retrieval.</p>
+                        <a href="#" class="feature-link">
+                            Learn More <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Data Security</h3>
+                        <p>Enterprise-grade security to protect sensitive patient information.</p>
+                        <a href="#" class="feature-link">
+                            Learn More <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h4>About MediCare</h4>
+                    <p>Providing exceptional healthcare services with cutting-edge technology and compassionate medical professionals.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="/IM3_ACTIVITY/dashboard.php"><i class="fas fa-chevron-right me-2"></i>Dashboard</a></li>
+                        <li><a href="/IM3_ACTIVITY/view_doctors.php"><i class="fas fa-chevron-right me-2"></i>Doctors</a></li>
+                        <li><a href="/IM3_ACTIVITY/view_patients.php"><i class="fas fa-chevron-right me-2"></i>Patients</a></li>
+                        <li><a href="/IM3_ACTIVITY/view_appointments.php"><i class="fas fa-chevron-right me-2"></i>Appointments</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h4>Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right me-2"></i>Emergency Care</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right me-2"></i>Outpatient Services</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right me-2"></i>Diagnostic Center</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right me-2"></i>Pharmacy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h4>Contact Info</h4>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt me-2"></i>6329 Potohan</li>
+                        <li><i class="fas fa-phone me-2"></i>+1 (555) 123-4567</li>
+                        <li><i class="fas fa-envelope me-2"></i>info@medicare.com</li>
+                        <li><i class="fas fa-clock me-2"></i>24/7 Emergency Service</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MediCare Hospital. All rights reserved. | Patient Management System v1.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>

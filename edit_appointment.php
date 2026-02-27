@@ -1,6 +1,32 @@
 <?php
 require_once 'db_connect.php';
-includeHeader('Schedule Appointment');
+includeHeader('Edit Appointment');
+
+$id = $_GET['id'] ?? 0;
+$errors = [];
+
+// Fetch appointment data
+try {
+    $stmt = $pdo->prepare("
+        SELECT a.*, d.name as doctor_name, p.name as patient_name 
+        FROM appointments a
+        JOIN doctors d ON a.doctor_id = d.id
+        JOIN patients p ON a.patient_id = p.id
+        WHERE a.id = ?
+    ");
+    $stmt->execute([$id]);
+    $appointment = $stmt->fetch();
+    
+    if (!$appointment) {
+        $_SESSION['error'] = "Appointment not found.";
+        header("Location: view_appointments.php");
+        exit;
+    }
+} catch(PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: view_appointments.php");
+    exit;
+}
 
 // Fetch doctors for dropdown
 try {
@@ -17,9 +43,6 @@ try {
 } catch(PDOException $e) {
     $error = "Error fetching patients: " . $e->getMessage();
 }
-
-$doctor_id = $patient_id = $appointment_date = $appointment_time = $notes = '';
-$errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate inputs
@@ -39,15 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($appointment_date)) {
         $errors[] = "Appointment date is required.";
-    } elseif (strtotime($appointment_date) < strtotime(date('Y-m-d'))) {
-        $errors[] = "Appointment date cannot be in the past.";
     }
     
     if (empty($appointment_time)) {
         $errors[] = "Appointment time is required.";
     }
     
-    // Check for double booking
+    // Check for double booking (excluding current appointment)
     if (empty($errors)) {
         try {
             $stmt = $pdo->prepare("
@@ -56,8 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE doctor_id = ? 
                 AND appointment_date = ? 
                 AND appointment_time = ?
+                AND id != ?
             ");
-            $stmt->execute([$doctor_id, $appointment_date, $appointment_time]);
+            $stmt->execute([$doctor_id, $appointment_date, $appointment_time, $id]);
             $result = $stmt->fetch();
             
             if ($result['count'] > 0) {
@@ -71,22 +93,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $stmt = $pdo->prepare("
-                INSERT INTO appointments (doctor_id, patient_id, appointment_date, appointment_time, notes) 
-                VALUES (?, ?, ?, ?, ?)
+                UPDATE appointments 
+                SET doctor_id = ?, patient_id = ?, appointment_date = ?, appointment_time = ?, notes = ? 
+                WHERE id = ?
             ");
-            $stmt->execute([$doctor_id, $patient_id, $appointment_date, $appointment_time, $notes]);
+            $stmt->execute([$doctor_id, $patient_id, $appointment_date, $appointment_time, $notes, $id]);
             
-            $_SESSION['success'] = "Appointment scheduled successfully!";
+            $_SESSION['success'] = "Appointment updated successfully!";
             header("Location: view_appointments.php");
             exit;
         } catch(PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
+} else {
+    // Populate form with existing data
+    $doctor_id = $appointment['doctor_id'];
+    $patient_id = $appointment['patient_id'];
+    $appointment_date = $appointment['appointment_date'];
+    $appointment_time = $appointment['appointment_time'];
+    $notes = $appointment['notes'];
 }
 ?>
 
-<h1 class="mb-4">Schedule New Appointment</h1>
+<h1 class="mb-4">Edit Appointment</h1>
 
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger">
@@ -152,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="d-flex justify-content-between">
                 <a href="view_appointments.php" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                <button type="submit" class="btn btn-primary">Update Appointment</button>
             </div>
         </form>
     </div>

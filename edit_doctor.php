@@ -1,9 +1,26 @@
 <?php
 require_once 'db_connect.php';
-includeHeader('Add Doctor');
+includeHeader('Edit Doctor');
 
-$name = $specialization = $phone = $email = '';
+$id = $_GET['id'] ?? 0;
 $errors = [];
+
+// Fetch doctor data
+try {
+    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE id = ?");
+    $stmt->execute([$id]);
+    $doctor = $stmt->fetch();
+    
+    if (!$doctor) {
+        $_SESSION['error'] = "Doctor not found.";
+        header("Location: view_doctors.php");
+        exit;
+    }
+} catch(PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: view_doctors.php");
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate inputs
@@ -22,20 +39,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO doctors (name, specialization, phone, email) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$name, $specialization, $phone, $email]);
+            $stmt = $pdo->prepare("UPDATE doctors SET name = ?, specialization = ?, phone = ?, email = ? WHERE id = ?");
+            $stmt->execute([$name, $specialization, $phone, $email, $id]);
             
-            $_SESSION['success'] = "Doctor added successfully!";
+            $_SESSION['success'] = "Doctor updated successfully!";
             header("Location: view_doctors.php");
             exit;
         } catch(PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
+} else {
+    // Populate form with existing data
+    $name = $doctor['name'];
+    $specialization = $doctor['specialization'];
+    $phone = $doctor['phone'];
+    $email = $doctor['email'];
 }
 ?>
 
-<h1 class="mb-4">Add New Doctor</h1>
+<h1 class="mb-4">Edit Doctor</h1>
 
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger">
@@ -76,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="d-flex justify-content-between">
                 <a href="view_doctors.php" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Doctor</button>
+                <button type="submit" class="btn btn-primary">Update Doctor</button>
             </div>
         </form>
     </div>

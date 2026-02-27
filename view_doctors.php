@@ -1,38 +1,91 @@
 <?php
-include "db_connect.php";
+require_once 'db_connect.php';
+includeHeader('View Doctors');
 
-$sql = "SELECT * FROM doctors";
-$result = mysqli_query($conn, $sql);
-?>
-
-<h2>Doctors List</h2>
-
-<table border="1" cellpadding="10">
-    <tr>
-        <th>ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Specialization</th>
-        <th>Email</th>
-        <th>Contact Number</th>
-    </tr>
-
-<?php
-if (mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "<tr>
-                <td>{$row['doctor_id']}</td>
-                <td>{$row['first_name']}</td>
-                <td>{$row['last_name']}</td>
-                <td>{$row['specialization']}</td>
-                <td>{$row['email']}</td>
-                <td>{$row['contact_number']}</td>
-              </tr>";
+// Handle delete request
+if (isset($_GET['delete'])) {
+    try {
+        $stmt = $pdo->prepare("DELETE FROM doctors WHERE id = ?");
+        $stmt->execute([$_GET['delete']]);
+        $success = "Doctor deleted successfully!";
+    } catch(PDOException $e) {
+        $error = "Error deleting doctor: " . $e->getMessage();
     }
-} else {
-    echo "<tr><td colspan='6'>No records found</td></tr>";
 }
 
-mysqli_close($conn);
+// Fetch all doctors
+try {
+    $stmt = $pdo->query("SELECT * FROM doctors ORDER BY name ASC");
+    $doctors = $stmt->fetchAll();
+} catch(PDOException $e) {
+    $error = "Error fetching doctors: " . $e->getMessage();
+}
 ?>
-</table>
+
+<h1 class="mb-4">Manage Doctors</h1>
+
+<?php if (isset($success)): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?php echo $success; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?php echo $error; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<div class="card">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Doctors List</h5>
+        <a href="add_doctor.php" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus"></i> Add New Doctor
+        </a>
+    </div>
+    <div class="card-body">
+        <?php if (empty($doctors)): ?>
+            <p class="text-muted mb-0">No doctors found. Click "Add New Doctor" to create one.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($doctors as $doctor): ?>
+                        <tr>
+                            <td><?php echo $doctor['id']; ?></td>
+                            <td><?php echo htmlspecialchars($doctor['name']); ?></td>
+                            <td><?php echo htmlspecialchars($doctor['specialization'] ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($doctor['phone'] ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($doctor['email'] ?? 'N/A'); ?></td>
+                            <td class="action-buttons">
+                                <a href="edit_doctor.php?id=<?php echo $doctor['id']; ?>" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="?delete=<?php echo $doctor['id']; ?>" 
+                                   class="btn btn-sm btn-danger" 
+                                   onclick="return confirm('Are you sure you want to delete this doctor? This will affect related appointments.')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php includeFooter(); ?>
