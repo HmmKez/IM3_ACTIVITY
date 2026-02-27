@@ -7,7 +7,7 @@ $errors = [];
 
 // Fetch patient data
 try {
-    $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT * FROM patients WHERE patient_id = ?");
     $stmt->execute([$id]);
     $patient = $stmt->fetch();
     
@@ -24,24 +24,28 @@ try {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate inputs
-    $name = trim($_POST['name'] ?? '');
-    $age = trim($_POST['age'] ?? '');
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
+    $birth_date = trim($_POST['birth_date'] ?? '');
     $gender = trim($_POST['gender'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
+    $contact_number = trim($_POST['contact_number'] ?? '');
     $address = trim($_POST['address'] ?? '');
     
-    if (empty($name)) {
-        $errors[] = "Patient name is required.";
+    if (empty($first_name)) {
+        $errors[] = "First name is required.";
+    }
+    if (empty($last_name)) {
+        $errors[] = "Last name is required.";
     }
     
-    if (!empty($age) && (!is_numeric($age) || $age < 0 || $age > 150)) {
-        $errors[] = "Please enter a valid age (0-150).";
+    if (!empty($birth_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $birth_date)) {
+        $errors[] = "Please enter a valid birth date (YYYY-MM-DD).";
     }
     
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("UPDATE patients SET name = ?, age = ?, gender = ?, phone = ?, address = ? WHERE id = ?");
-            $stmt->execute([$name, $age, $gender, $phone, $address, $id]);
+            $stmt = $pdo->prepare("UPDATE patients SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, contact_number = ?, address = ? WHERE patient_id = ?");
+            $stmt->execute([$first_name, $last_name, $birth_date, $gender, $contact_number, $address, $id]);
             
             $_SESSION['success'] = "Patient updated successfully!";
             header("Location: view_patients.php");
@@ -52,10 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } else {
     // Populate form with existing data
-    $name = $patient['name'];
-    $age = $patient['age'];
+    $first_name = $patient['first_name'];
+    $last_name = $patient['last_name'];
+    $birth_date = $patient['birth_date'];
     $gender = $patient['gender'];
-    $phone = $patient['phone'];
+    $contact_number = $patient['contact_number'];
     $address = $patient['address'];
 }
 ?>
@@ -75,17 +80,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card">
     <div class="card-body">
         <form method="POST" action="">
-            <div class="mb-3">
-                <label for="name" class="form-label">Patient Name *</label>
-                <input type="text" class="form-control" id="name" name="name" 
-                       value="<?php echo htmlspecialchars($name); ?>" required>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="first_name" class="form-label">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                           value="<?php echo htmlspecialchars($first_name); ?>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                           value="<?php echo htmlspecialchars($last_name); ?>" required>
+                </div>
             </div>
             
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="age" class="form-label">Age</label>
-                    <input type="number" class="form-control" id="age" name="age" 
-                           value="<?php echo htmlspecialchars($age); ?>" min="0" max="150">
+                    <label for="birth_date" class="form-label">Birth Date</label>
+                    <input type="date" class="form-control" id="birth_date" name="birth_date" 
+                           value="<?php echo htmlspecialchars($birth_date); ?>">
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -100,9 +112,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" name="phone" 
-                       value="<?php echo htmlspecialchars($phone); ?>">
+                <label for="contact_number" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" id="contact_number" name="contact_number" 
+                       value="<?php echo htmlspecialchars($contact_number); ?>">
             </div>
             
             <div class="mb-3">

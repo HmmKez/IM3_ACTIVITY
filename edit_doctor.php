@@ -7,7 +7,7 @@ $errors = [];
 
 // Fetch doctor data
 try {
-    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE doctor_id = ?");
     $stmt->execute([$id]);
     $doctor = $stmt->fetch();
     
@@ -24,13 +24,18 @@ try {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate inputs
-    $name = trim($_POST['name'] ?? '');
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
     $specialization = trim($_POST['specialization'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
+    $contact_number = trim($_POST['contact_number'] ?? '');
     $email = trim($_POST['email'] ?? '');
     
-    if (empty($name)) {
-        $errors[] = "Doctor name is required.";
+    if (empty($first_name)) {
+        $errors[] = "First name is required.";
+    }
+    
+    if (empty($last_name)) {
+        $errors[] = "Last name is required.";
     }
     
     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -39,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("UPDATE doctors SET name = ?, specialization = ?, phone = ?, email = ? WHERE id = ?");
-            $stmt->execute([$name, $specialization, $phone, $email, $id]);
+            $stmt = $pdo->prepare("UPDATE doctors SET first_name = ?, last_name = ?, specialization = ?, contact_number = ?, email = ? WHERE doctor_id = ?");
+            $stmt->execute([$first_name, $last_name, $specialization, $contact_number, $email, $id]);
             
             $_SESSION['success'] = "Doctor updated successfully!";
             header("Location: view_doctors.php");
@@ -51,9 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } else {
     // Populate form with existing data
-    $name = $doctor['name'];
+    $first_name = $doctor['first_name'];
+    $last_name = $doctor['last_name'];
     $specialization = $doctor['specialization'];
-    $phone = $doctor['phone'];
+    $contact_number = $doctor['contact_number'];
     $email = $doctor['email'];
 }
 ?>
@@ -73,12 +79,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card">
     <div class="card-body">
         <form method="POST" action="">
-            <div class="mb-3">
-                <label for="name" class="form-label">Doctor Name *</label>
-                <input type="text" class="form-control" id="name" name="name" 
-                       value="<?php echo htmlspecialchars($name); ?>" required>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="first_name" class="form-label">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                           value="<?php echo htmlspecialchars($first_name); ?>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                           value="<?php echo htmlspecialchars($last_name); ?>" required>
+                </div>
             </div>
-            
+
             <div class="mb-3">
                 <label for="specialization" class="form-label">Specialization</label>
                 <input type="text" class="form-control" id="specialization" name="specialization" 
@@ -86,9 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" name="phone" 
-                       value="<?php echo htmlspecialchars($phone); ?>">
+                <label for="contact_number" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" id="contact_number" name="contact_number" 
+                       value="<?php echo htmlspecialchars($contact_number); ?>">
             </div>
             
             <div class="mb-3">

@@ -5,7 +5,7 @@ includeHeader('View Doctors');
 // Handle delete request
 if (isset($_GET['delete'])) {
     try {
-        $stmt = $pdo->prepare("DELETE FROM doctors WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM doctors WHERE doctor_id = ?");
         $stmt->execute([$_GET['delete']]);
         $success = "Doctor deleted successfully!";
     } catch(PDOException $e) {
@@ -15,7 +15,7 @@ if (isset($_GET['delete'])) {
 
 // Fetch all doctors
 try {
-    $stmt = $pdo->query("SELECT * FROM doctors ORDER BY name ASC");
+    $stmt = $pdo->query("SELECT * FROM doctors ORDER BY last_name ASC");
     $doctors = $stmt->fetchAll();
 } catch(PDOException $e) {
     $error = "Error fetching doctors: " . $e->getMessage();
@@ -45,6 +45,7 @@ try {
             <i class="fas fa-plus"></i> Add New Doctor
         </a>
     </div>
+
     <div class="card-body">
         <?php if (empty($doctors)): ?>
             <p class="text-muted mb-0">No doctors found. Click "Add New Doctor" to create one.</p>
@@ -54,26 +55,28 @@ try {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
+                            <th>Full Name</th>
                             <th>Specialization</th>
-                            <th>Phone</th>
+                            <th>Contact Number</th>
                             <th>Email</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($doctors as $doctor): ?>
                         <tr>
-                            <td><?php echo $doctor['id']; ?></td>
-                            <td><?php echo htmlspecialchars($doctor['name']); ?></td>
+                            <td><?php echo $doctor['doctor_id']; ?></td>
+                            <td><?php echo htmlspecialchars($doctor['first_name'] . ' ' . $doctor['last_name']); ?></td>
                             <td><?php echo htmlspecialchars($doctor['specialization'] ?? 'N/A'); ?></td>
-                            <td><?php echo htmlspecialchars($doctor['phone'] ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($doctor['contact_number'] ?? 'N/A'); ?></td>
                             <td><?php echo htmlspecialchars($doctor['email'] ?? 'N/A'); ?></td>
                             <td class="action-buttons">
-                                <a href="edit_doctor.php?id=<?php echo $doctor['id']; ?>" class="btn btn-sm btn-warning">
+                                <a href="edit_doctor.php?id=<?php echo $doctor['doctor_id']; ?>" 
+                                   class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <a href="?delete=<?php echo $doctor['id']; ?>" 
+                                <a href="?delete=<?php echo $doctor['doctor_id']; ?>" 
                                    class="btn btn-sm btn-danger" 
                                    onclick="return confirm('Are you sure you want to delete this doctor? This will affect related appointments.')">
                                     <i class="fas fa-trash"></i> Delete
@@ -82,6 +85,7 @@ try {
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
+
                 </table>
             </div>
         <?php endif; ?>

@@ -5,7 +5,7 @@ includeHeader('View Patients');
 // Handle delete request
 if (isset($_GET['delete'])) {
     try {
-        $stmt = $pdo->prepare("DELETE FROM patients WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM patients WHERE patient_id = ?");
         $stmt->execute([$_GET['delete']]);
         $success = "Patient deleted successfully!";
     } catch(PDOException $e) {
@@ -15,7 +15,7 @@ if (isset($_GET['delete'])) {
 
 // Fetch all patients
 try {
-    $stmt = $pdo->query("SELECT * FROM patients ORDER BY name ASC");
+    $stmt = $pdo->query("SELECT * FROM patients ORDER BY last_name ASC");
     $patients = $stmt->fetchAll();
 } catch(PDOException $e) {
     $error = "Error fetching patients: " . $e->getMessage();
@@ -45,6 +45,7 @@ try {
             <i class="fas fa-plus"></i> Add New Patient
         </a>
     </div>
+
     <div class="card-body">
         <?php if (empty($patients)): ?>
             <p class="text-muted mb-0">No patients found. Click "Add New Patient" to create one.</p>
@@ -54,28 +55,49 @@ try {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Age</th>
+                            <th>Full Name</th>
+                            <th>Birth Date</th>
                             <th>Gender</th>
                             <th>Phone</th>
                             <th>Address</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($patients as $patient): ?>
                         <tr>
-                            <td><?php echo $patient['id']; ?></td>
-                            <td><?php echo htmlspecialchars($patient['name']); ?></td>
-                            <td><?php echo htmlspecialchars($patient['age'] ?? 'N/A'); ?></td>
-                            <td><?php echo htmlspecialchars($patient['gender'] ?? 'N/A'); ?></td>
-                            <td><?php echo htmlspecialchars($patient['phone'] ?? 'N/A'); ?></td>
-                            <td><?php echo htmlspecialchars($patient['address'] ?? 'N/A'); ?></td>
+                            <td><?php echo $patient['patient_id']; ?></td>
+
+                            <td>
+                                <?php 
+                                echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']); 
+                                ?>
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($patient['birth_date'] ?? 'N/A'); ?>
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($patient['gender'] ?? 'N/A'); ?>
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($patient['phone'] ?? 'N/A'); ?>
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($patient['address'] ?? 'N/A'); ?>
+                            </td>
+
                             <td class="action-buttons">
-                                <a href="edit_patient.php?id=<?php echo $patient['id']; ?>" class="btn btn-sm btn-warning">
+                                <a href="edit_patient.php?id=<?php echo $patient['patient_id']; ?>" 
+                                   class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <a href="?delete=<?php echo $patient['id']; ?>" 
+
+                                <a href="?delete=<?php echo $patient['patient_id']; ?>" 
                                    class="btn btn-sm btn-danger" 
                                    onclick="return confirm('Are you sure you want to delete this patient? This will affect related appointments.')">
                                     <i class="fas fa-trash"></i> Delete
@@ -84,6 +106,7 @@ try {
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
+
                 </table>
             </div>
         <?php endif; ?>

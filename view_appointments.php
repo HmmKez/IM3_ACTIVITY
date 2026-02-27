@@ -5,7 +5,7 @@ includeHeader('View Appointments');
 // Handle delete request
 if (isset($_GET['delete'])) {
     try {
-        $stmt = $pdo->prepare("DELETE FROM appointments WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM appointments WHERE appointment_id = ?");
         $stmt->execute([$_GET['delete']]);
         $success = "Appointment deleted successfully!";
     } catch(PDOException $e) {
@@ -13,12 +13,14 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Build query based on filters
+// Build query
 $query = "
-    SELECT a.*, d.name as doctor_name, d.specialization, p.name as patient_name 
+    SELECT a.*, 
+           d.first_name AS doctor_first, d.last_name AS doctor_last, d.specialization,
+           p.first_name AS patient_first, p.last_name AS patient_last
     FROM appointments a
-    JOIN doctors d ON a.doctor_id = d.id
-    JOIN patients p ON a.patient_id = p.id
+    JOIN doctors d ON a.doctor_id = d.doctor_id
+    JOIN patients p ON a.patient_id = p.patient_id
 ";
 
 $params = [];
@@ -29,12 +31,11 @@ if (isset($_GET['today'])) {
     $conditions[] = "DATE(a.appointment_date) = CURDATE()";
 }
 
-// Filter by date range
 if (!empty($conditions)) {
     $query .= " WHERE " . implode(" AND ", $conditions);
 }
 
-$query .= " ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+$query .= " ORDER BY a.appointment_date DESC";
 
 try {
     $stmt = $pdo->prepare($query);
@@ -80,8 +81,8 @@ try {
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Time</th>
+                            <th>ID</th>
+                            <th>Appointment Date & Time</th>
                             <th>Doctor</th>
                             <th>Patient</th>
                             <th>Status</th>
@@ -89,31 +90,28 @@ try {
                             <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($appointments as $appointment): ?>
                         <tr>
-                            <td><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></td>
-                            <td><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></td>
+                            <td><?php echo $appointment['appointment_id']; ?></td>
+                            <td><?php echo date('M d, Y h:i A', strtotime($appointment['appointment_date'])); ?></td>
                             <td>
-                                <?php echo htmlspecialchars($appointment['doctor_name']); ?>
+                                <?php echo htmlspecialchars($appointment['doctor_first'] . ' ' . $appointment['doctor_last']); ?>
                                 <br><small class="text-muted"><?php echo htmlspecialchars($appointment['specialization'] ?? ''); ?></small>
                             </td>
-                            <td><?php echo htmlspecialchars($appointment['patient_name']); ?></td>
+                            <td>
+                                <?php echo htmlspecialchars($appointment['patient_first'] . ' ' . $appointment['patient_last']); ?>
+                            </td>
                             <td>
                                 <?php
-                                $today = date('Y-m-d');
-                                $appDate = $appointment['appointment_date'];
-                                $appTime = $appointment['appointment_time'];
-                                $currentTime = date('H:i:s');
-                                
-                                if ($appDate < $today) {
+                                $today = date('Y-m-d H:i:s');
+                                $appDateTime = $appointment['appointment_date'];
+
+                                if ($appDateTime < $today) {
                                     echo '<span class="badge bg-secondary">Past</span>';
-                                } elseif ($appDate == $today) {
-                                    if ($appTime < $currentTime) {
-                                        echo '<span class="badge bg-warning">Ongoing</span>';
-                                    } else {
-                                        echo '<span class="badge bg-success">Today</span>';
-                                    }
+                                } elseif ($appDateTime >= $today && $appDateTime <= date('Y-m-d H:i:s', strtotime('+1 hour'))) {
+                                    echo '<span class="badge bg-warning">Ongoing</span>';
                                 } else {
                                     echo '<span class="badge bg-primary">Upcoming</span>';
                                 }
@@ -121,10 +119,10 @@ try {
                             </td>
                             <td><?php echo htmlspecialchars(substr($appointment['notes'] ?? '', 0, 50)) . (strlen($appointment['notes'] ?? '') > 50 ? '...' : ''); ?></td>
                             <td class="action-buttons">
-                                <a href="edit_appointment.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-warning">
+                                <a href="edit_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="?delete=<?php echo $appointment['id']; ?>" 
+                                <a href="?delete=<?php echo $appointment['appointment_id']; ?>" 
                                    class="btn btn-sm btn-danger" 
                                    onclick="return confirm('Are you sure you want to delete this appointment?')">
                                     <i class="fas fa-trash"></i>
@@ -133,6 +131,7 @@ try {
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
+
                 </table>
             </div>
         <?php endif; ?>

@@ -538,6 +538,11 @@ session_start();
             </div>
             
             <div class="user-info">
+                <!-- Home Button -->
+                <a href="/IM3_ACTIVITY/index.html" class="btn-primary me-3">
+                    <i class="fas fa-home me-1"></i>Home
+                </a>
+
                 <div class="notification-badge">
                     <i class="far fa-bell"></i>
                     <span class="badge-count">3</span>
@@ -553,6 +558,7 @@ session_start();
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
         <?php

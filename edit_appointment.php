@@ -8,11 +8,7 @@ $errors = [];
 // Fetch appointment data
 try {
     $stmt = $pdo->prepare("
-        SELECT a.*, d.name as doctor_name, p.name as patient_name 
-        FROM appointments a
-        JOIN doctors d ON a.doctor_id = d.id
-        JOIN patients p ON a.patient_id = p.id
-        WHERE a.id = ?
+        SELECT * FROM appointments WHERE appointment_id = ?
     ");
     $stmt->execute([$id]);
     $appointment = $stmt->fetch();
@@ -30,44 +26,48 @@ try {
 
 // Fetch doctors for dropdown
 try {
-    $stmt = $pdo->query("SELECT id, name, specialization FROM doctors ORDER BY name");
+    $stmt = $pdo->query("SELECT doctor_id, first_name, last_name, specialization FROM doctors ORDER BY last_name, first_name");
     $doctors = $stmt->fetchAll();
 } catch(PDOException $e) {
-    $error = "Error fetching doctors: " . $e->getMessage();
+    $errors[] = "Error fetching doctors: " . $e->getMessage();
 }
 
 // Fetch patients for dropdown
 try {
-    $stmt = $pdo->query("SELECT id, name FROM patients ORDER BY name");
+    $stmt = $pdo->query("SELECT patient_id, first_name, last_name FROM patients ORDER BY last_name, first_name");
     $patients = $stmt->fetchAll();
 } catch(PDOException $e) {
-    $error = "Error fetching patients: " . $e->getMessage();
+    $errors[] = "Error fetching patients: " . $e->getMessage();
 }
 
+// Split existing appointment datetime into date and time
+$appointment_date = date('Y-m-d', strtotime($appointment['appointment_date']));
+$appointment_time = date('H:i', strtotime($appointment['appointment_date']));
+$doctor_id = $appointment['doctor_id'];
+$patient_id = $appointment['patient_id'];
+$notes = $appointment['notes'] ?? '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate inputs
+    // Get submitted values
     $doctor_id = $_POST['doctor_id'] ?? '';
     $patient_id = $_POST['patient_id'] ?? '';
     $appointment_date = $_POST['appointment_date'] ?? '';
     $appointment_time = $_POST['appointment_time'] ?? '';
     $notes = trim($_POST['notes'] ?? '');
     
-    if (empty($doctor_id)) {
-        $errors[] = "Please select a doctor.";
+    if (empty($doctor_id)) $errors[] = "Please select a doctor.";
+    if (empty($patient_id)) $errors[] = "Please select a patient.";
+    if (empty($appointment_date)) $errors[] = "Appointment date is required.";
+    if (empty($appointment_time)) $errors[] = "Appointment time is required.";
+
+    // Combine date and time into DATETIME
+    if (empty($errors)) {
+        $appointment_datetime = $appointment_date . ' ' . $appointment_time;
+        if (strtotime($appointment_datetime) < time()) {
+            $errors[] = "Appointment cannot be scheduled in the past.";
+        }
     }
-    
-    if (empty($patient_id)) {
-        $errors[] = "Please select a patient.";
-    }
-    
-    if (empty($appointment_date)) {
-        $errors[] = "Appointment date is required.";
-    }
-    
-    if (empty($appointment_time)) {
-        $errors[] = "Appointment time is required.";
-    }
-    
+
     // Check for double booking (excluding current appointment)
     if (empty($errors)) {
         try {
@@ -76,10 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 FROM appointments 
                 WHERE doctor_id = ? 
                 AND appointment_date = ? 
-                AND appointment_time = ?
-                AND id != ?
+                AND appointment_id != ?
             ");
-            $stmt->execute([$doctor_id, $appointment_date, $appointment_time, $id]);
+            $stmt->execute([$doctor_id, $appointment_datetime, $id]);
             $result = $stmt->fetch();
             
             if ($result['count'] > 0) {
@@ -89,15 +88,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Error checking availability: " . $e->getMessage();
         }
     }
-    
+
+    // Update appointment
     if (empty($errors)) {
         try {
             $stmt = $pdo->prepare("
-                UPDATE appointments 
-                SET doctor_id = ?, patient_id = ?, appointment_date = ?, appointment_time = ?, notes = ? 
-                WHERE id = ?
+                UPDATE appointments
+                SET doctor_id = ?, patient_id = ?, appointment_date = ?, notes = ?
+                WHERE appointment_id = ?
             ");
-            $stmt->execute([$doctor_id, $patient_id, $appointment_date, $appointment_time, $notes, $id]);
+            $stmt->execute([$doctor_id, $patient_id, $appointment_datetime, $notes, $id]);
             
             $_SESSION['success'] = "Appointment updated successfully!";
             header("Location: view_appointments.php");
@@ -106,13 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
-} else {
-    // Populate form with existing data
-    $doctor_id = $appointment['doctor_id'];
-    $patient_id = $appointment['patient_id'];
-    $appointment_date = $appointment['appointment_date'];
-    $appointment_time = $appointment['appointment_time'];
-    $notes = $appointment['notes'];
 }
 ?>
 
@@ -122,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="alert alert-danger">
         <ul class="mb-0">
             <?php foreach ($errors as $error): ?>
-                <li><?php echo $error; ?></li>
+                <li><?php echo htmlspecialchars($error); ?></li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -137,9 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select class="form-control" id="doctor_id" name="doctor_id" required>
                         <option value="">Choose a doctor...</option>
                         <?php foreach ($doctors as $doctor): ?>
-                            <option value="<?php echo $doctor['id']; ?>" 
-                                <?php echo $doctor_id == $doctor['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($doctor['name']); ?> 
+                            <option value="<?php echo $doctor['doctor_id']; ?>" 
+                                <?php echo $doctor_id == $doctor['doctor_id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($doctor['first_name'] . ' ' . $doctor['last_name']); ?> 
                                 (<?php echo htmlspecialchars($doctor['specialization'] ?? 'General'); ?>)
                             </option>
                         <?php endforeach; ?>
@@ -151,9 +144,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select class="form-control" id="patient_id" name="patient_id" required>
                         <option value="">Choose a patient...</option>
                         <?php foreach ($patients as $patient): ?>
-                            <option value="<?php echo $patient['id']; ?>" 
-                                <?php echo $patient_id == $patient['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($patient['name']); ?>
+                            <option value="<?php echo $patient['patient_id']; ?>" 
+                                <?php echo $patient_id == $patient['patient_id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -196,7 +189,6 @@ document.getElementById('appointmentForm').addEventListener('submit', function(e
     if (date && time) {
         const selectedDateTime = new Date(date + 'T' + time);
         const now = new Date();
-        
         if (selectedDateTime < now) {
             e.preventDefault();
             alert('Appointment cannot be scheduled in the past.');
